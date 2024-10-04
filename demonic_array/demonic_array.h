@@ -4,8 +4,10 @@
 #define _23_09_2024_DEMONIC_ARRAY_H
 
 #include <algorithm>
-#include <cassert>
+#include <stdexcept>
 #include <initializer_list>
+
+
 
 template <typename T>
 class demonic_array {
@@ -32,6 +34,7 @@ public:
 		friend T* operator-(int n, iterator iter) { return iter.m_ptr - n; }
 
 	private:
+
 		T* m_ptr;
 
 	};
@@ -83,7 +86,10 @@ demonic_array<T>::demonic_array(int size)
 	, m_capacity{ m_size }
 
 {
-	assert(size >= 0 && "The size cannot be negative");
+	if (size < 0) {
+		throw std::invalid_argument("The size of the array cannot be negative.");
+	}
+
 	m_data = new T[m_size]{ };
 }
 
@@ -118,6 +124,7 @@ demonic_array<T>::~demonic_array() {
 	delete[] m_data;
 	m_capacity = 0;
 	m_size = 0;
+	m_data = nullptr;
 }
 
 template <typename T>
@@ -157,16 +164,18 @@ demonic_array<T>& demonic_array<T>::operator=(demonic_array<T>&& arr) noexcept {
 
 template <typename T>
 T& demonic_array<T>::operator[](int index) {
-	assert(index >= 0 && "Going beyond the boundaries of the array");
-	assert(index < m_size && "Going beyond the boundaries of the array");
+	if (index < 0 || index >= m_size) {
+		std::out_of_range("Venturing beyond the confines of the array.");
+	}
 
 	return m_data[index];
 }
 
 template <typename T>
 const T& demonic_array<T>::operator[](int index) const {
-	assert(index >= 0 && "Going beyond the boundaries of the array");
-	assert(index < m_size && "Going beyond the boundaries of the array");
+	if (index < 0 || index >= m_size) {
+		std::out_of_range("Venturing beyond the confines of the array.");
+	}
 
 	return m_data[index];
 }
@@ -193,7 +202,9 @@ const T& demonic_array<T>::front() const {
 
 template <typename T>
 void demonic_array<T>::reserve(int newCapacity) {
-	assert(newCapacity >= 0 && "The newCapacity cannot be negative");
+	if (newCapacity < 0) {
+		std::invalid_argument("The \"newCapacity\" cannot be a negative value.");
+	}
 
 	m_capacity = newCapacity;
 	m_size = std::min(m_size, m_capacity);
@@ -213,8 +224,6 @@ void demonic_array<T>::clear() {
 
 template <typename T>
 void demonic_array<T>::insert(int index, const T& val) {
-	assert(index >= 0 && "Going beyond the boundaries of the array");
-	assert(index < m_size && "Going beyond the boundaries of the array");
 	if (size() == capacity()) {
 		reserve(capacity() * 2);
 	}
@@ -230,12 +239,14 @@ void demonic_array<T>::insert(int index, const T& val) {
 
 template <typename T>
 void demonic_array<T>::erase(int index) {
-	assert(index >= 0 && "Going beyond the boundaries of the array");
-	assert(index < m_size && "Going beyond the boundaries of the array");
+	if (index < 0 || index >= m_size) {
+		std::out_of_range("Venturing beyond the confines of the array.");
+	}
 
 	if (index != size() - 1) {
 		std::copy_n(begin() + index + 1, size() - index, begin() + index);
 	}
+
 	--m_size;
 }
 
@@ -252,7 +263,9 @@ bool demonic_array<T>::pop_back() {
 
 template <typename T>
 void demonic_array<T>::resize(int count) {
-	assert(count >= 0 && "The size cannot be negative");
+	if (count < 0) {
+		std::invalid_argument("The \"count\" cannot be a negative value.");
+	}
 
 	if (count < capacity()) {
 		m_size = count;
